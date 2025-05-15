@@ -1,43 +1,30 @@
 workflows:
-
   flutter-ios-simulator:
-
     name: Flutter iOS Simulator
-
     environment:
-
       flutter: 3.27.3
-
       xcode: 16.2
-
+      cocoapods: default  # Ensures CocoaPods is available
     scripts:
+      - name: Install Dependencies
+        script: |
+          flutter clean
+          flutter pub get
+          cd ios && pod install --repo-update
 
-      - name: install dependencies
+      - name: Build Flutter Debug
+        script: flutter build ios --debug --no-codesign
 
-        script: flutter pub get
-
-      - name: Build unsigned .app
-
-        script: |  
-
+      - name: Build .app for Simulator
+        script: |
           xcodebuild -workspace "ios/Runner.xcworkspace" \
-
             -scheme "Runner" \
-
             -sdk iphonesimulator \
-
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.2' \
-
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=17.2' \
             -configuration Debug \
-
             CODE_SIGN_IDENTITY="" \
-
             CODE_SIGNING_REQUIRED=NO \
-
             CODE_SIGNING_ALLOWED=NO \
-
             -derivedDataPath ios/output
-
     artifacts:
-
       - ios/output/Build/Products/Debug-iphonesimulator/Runner.app
