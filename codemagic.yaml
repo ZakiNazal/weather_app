@@ -2,9 +2,9 @@ workflows:
   flutter-ios-simulator:
     name: Flutter iOS Simulator
     environment:
-      flutter: 3.27.3
-      xcode: 16.2
-      cocoapods: default  # Ensures CocoaPods is available
+      flutter: 3.27.3  # Ensure this version is available
+      xcode: 16.2       # Ensure this version is available
+      cocoapods: default
     scripts:
       - name: Install Dependencies
         script: |
