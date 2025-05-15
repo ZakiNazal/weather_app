@@ -1,0 +1,59 @@
+name: weather_app
+description: "My first weather app!"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  geolocator: ^14.0.0
+  geocoding: ^3.0.0
+  http: ^1.4.0
+  lottie: ^3.3.1
+  font_awesome_flutter: ^10.8.0
+  intl: ^0.20.2
+  weather: ^3.2.1
+  google_maps_flutter: ^2.12.1
+  rive: ^0.13.20
+  flutter_map: ^8.1.1
+  latlong2: ^0.9.1
+  flutter_native_splash: ^2.4.6
+  json_annotation: ^4.9.0
+  json_serializable: ^6.9.5
+  provider: ^6.1.5
+  shared_preferences: ^2.5.3
+  permission_handler: ^12.0.0+1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.15
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/rive/weather_icon.riv
+    # You can uncomment and add more asset directories if needed
+    # - assets/images/
+    # - assets/json/
+
+
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
