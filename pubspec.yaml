@@ -22,7 +22,6 @@ dependencies:
   rive: ^0.13.20
   flutter_map: ^8.1.1
   latlong2: ^0.9.1
-  flutter_native_splash: ^2.4.6
   json_annotation: ^4.9.0
   json_serializable: ^6.9.5
   provider: ^6.1.5
