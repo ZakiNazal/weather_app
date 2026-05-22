@@ -1,5 +1,3 @@
-// settings_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,7 +9,6 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-  // ⚙️ Settings Values
   bool _autoLocation = true;
   String _defaultCity = 'Jeddah';
   bool _showWindSpeed = true;
@@ -23,412 +20,353 @@ class _SettingPageState extends State<SettingPage> {
   TimeOfDay _notificationTime = const TimeOfDay(hour: 8, minute: 0);
   ThemeMode _themeMode = ThemeMode.system;
 
-  final List<String> _cities = ['Jeddah', 'Riyadh', 'Dubai', 'London', 'Tokyo'];
-  final List<String> _tempUnits = ['Celsius', 'Fahrenheit'];
-  final List<String> _windUnits = ['km/h', 'm/s', 'mph'];
-  final List<ThemeMode> _themeModes = [
-    ThemeMode.system,
-    ThemeMode.light,
-    ThemeMode.dark
-  ];
+  final _cities = ['Jeddah', 'Riyadh', 'Dubai', 'London', 'Tokyo'];
+  final _tempUnits = ['Celsius', 'Fahrenheit'];
+  final _windUnits = ['km/h', 'm/s', 'mph'];
 
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    _load();
   }
 
-  // 💾 Load Settings from SharedPreferences
-  Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
+  Future<void> _load() async {
+    final p = await SharedPreferences.getInstance();
     setState(() {
-      _autoLocation = prefs.getBool('autoLocation') ?? true;
-      _defaultCity = prefs.getString('defaultCity') ?? 'Jeddah';
-      _showWindSpeed = prefs.getBool('showWindSpeed') ?? true;
-      _showAirQuality = prefs.getBool('showAirQuality') ?? false;
-      _onCellularData = prefs.getBool('onCellularData') ?? true;
-      _temperatureUnit = prefs.getString('temperatureUnit') ?? 'Celsius';
-      _windSpeedUnit = prefs.getString('windSpeedUnit') ?? 'km/h';
-      _notificationsEnabled = prefs.getBool('notificationsEnabled') ?? true;
-      final timeString = prefs.getString('notificationTime');
-      if (timeString != null) {
-        final parts = timeString.split(':');
-        _notificationTime = TimeOfDay(
-          hour: int.parse(parts[0]),
-          minute: int.parse(parts[1]),
-        );
+      _autoLocation = p.getBool('autoLocation') ?? true;
+      _defaultCity = p.getString('defaultCity') ?? 'Jeddah';
+      _showWindSpeed = p.getBool('showWindSpeed') ?? true;
+      _showAirQuality = p.getBool('showAirQuality') ?? false;
+      _onCellularData = p.getBool('onCellularData') ?? true;
+      _temperatureUnit = p.getString('temperatureUnit') ?? 'Celsius';
+      _windSpeedUnit = p.getString('windSpeedUnit') ?? 'km/h';
+      _notificationsEnabled = p.getBool('notificationsEnabled') ?? true;
+      final t = p.getString('notificationTime');
+      if (t != null) {
+        final parts = t.split(':');
+        _notificationTime =
+            TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
       }
-      final themeString = prefs.getString('themeMode');
-      _themeMode = themeString == 'light'
+      final tm = p.getString('themeMode');
+      _themeMode = tm == 'light'
           ? ThemeMode.light
-          : themeString == 'dark'
+          : tm == 'dark'
               ? ThemeMode.dark
               : ThemeMode.system;
     });
   }
 
-  // 💾 Save Settings to SharedPreferences
-  Future<void> _saveSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('autoLocation', _autoLocation);
-    await prefs.setString('defaultCity', _defaultCity);
-    await prefs.setBool('showWindSpeed', _showWindSpeed);
-    await prefs.setBool('showAirQuality', _showAirQuality);
-    await prefs.setBool('onCellularData', _onCellularData);
-    await prefs.setString('temperatureUnit', _temperatureUnit);
-    await prefs.setString('windSpeedUnit', _windSpeedUnit);
-    await prefs.setBool('notificationsEnabled', _notificationsEnabled);
-    await prefs.setString(
-      'notificationTime',
-      '${_notificationTime.hour}:${_notificationTime.minute}',
-    );
-    await prefs.setString('themeMode', _themeMode.name);
-    //  Notify the app to rebuild with the new theme
-    if (mounted) {
-      (context as Element).markNeedsBuild();
-    }
-  }
-
-  // 🔄 Update Functions
-  void _toggleAutoLocation(bool value) {
-    setState(() => _autoLocation = value);
-    _saveSettings();
-  }
-
-  void _updateDefaultCity(String? value) {
-    if (value != null) setState(() => _defaultCity = value);
-    _saveSettings();
-  }
-
-  void _toggleWindSpeed(bool value) {
-    setState(() => _showWindSpeed = value);
-    _saveSettings();
-  }
-
-  void _toggleAirQuality(bool value) {
-    setState(() => _showAirQuality = value);
-    _saveSettings();
-  }
-
-  void _toggleCellularData(bool value) {
-    setState(() => _onCellularData = value);
-    _saveSettings();
-  }
-
-  void _updateTemperatureUnit(String? value) {
-    if (value != null) setState(() => _temperatureUnit = value);
-    _saveSettings();
-  }
-
-  void _updateWindSpeedUnit(String? value) {
-    if (value != null) setState(() => _windSpeedUnit = value);
-    _saveSettings();
-  }
-
-  void _toggleNotifications(bool value) {
-    setState(() => _notificationsEnabled = value);
-    _saveSettings();
-  }
-
-  Future<void> _selectNotificationTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _notificationTime,
-    );
-    if (picked != null && picked != _notificationTime) {
-      setState(() => _notificationTime = picked);
-      _saveSettings();
-    }
-  }
-
-  void _updateThemeMode(ThemeMode? value) {
-    if (value != null) setState(() => _themeMode = value);
-    _saveSettings();
+  Future<void> _save() async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool('autoLocation', _autoLocation);
+    await p.setString('defaultCity', _defaultCity);
+    await p.setBool('showWindSpeed', _showWindSpeed);
+    await p.setBool('showAirQuality', _showAirQuality);
+    await p.setBool('onCellularData', _onCellularData);
+    await p.setString('temperatureUnit', _temperatureUnit);
+    await p.setString('windSpeedUnit', _windSpeedUnit);
+    await p.setBool('notificationsEnabled', _notificationsEnabled);
+    await p.setString(
+        'notificationTime', '${_notificationTime.hour}:${_notificationTime.minute}');
+    await p.setString('themeMode', _themeMode.name);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF111827),
       appBar: AppBar(
-        backgroundColor: Colors.teal,
+        backgroundColor: const Color(0xFF111827),
         foregroundColor: Colors.white,
-        title: const Text(
-          'Settings',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Settings',
+            style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.w600, fontSize: 18)),
         centerTitle: true,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
         children: [
-          const SizedBox(height: 20),
-          _buildSettingsGroup(
-            title: 'Location',
-            children: [
-              _buildSettingRow(
-                title: 'Use Current Location',
-                subtitle: 'Automatically detect your city based on GPS',
-                trailing: Switch(
-                  value: _autoLocation,
-                  onChanged: _toggleAutoLocation,
-                  activeColor: Colors.teal,
-                ),
+          _section('Location', Icons.location_on_rounded, [
+            _switchRow(
+              'Use Current Location',
+              'Auto-detect city via GPS',
+              _autoLocation,
+              (v) => setState(() {
+                _autoLocation = v;
+                _save();
+              }),
+            ),
+            if (!_autoLocation)
+              _dropdownRow<String>(
+                'Default City',
+                'Fallback when GPS is off',
+                _defaultCity,
+                _cities,
+                (v) => setState(() {
+                  _defaultCity = v!;
+                  _save();
+                }),
               ),
-              if (!_autoLocation)
-                _buildSettingRow(
-                  title: 'Default City',
-                  subtitle: 'Choose city for manual weather updates',
-                  trailing: DropdownButton<String>(
-                    value: _defaultCity,
-                    onChanged: _updateDefaultCity,
-                    items: _cities
-                        .map((city) => DropdownMenuItem(
-                              value: city,
-                              child: Text(city),
-                            ))
-                        .toList(),
-                    underline: Container(),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildSettingsGroup(
-            title: 'Display Preferences',
-            children: [
-              _buildSettingRow(
-                title: 'Temperature Unit',
-                subtitle: 'Set the preferred unit for temperature display',
-                trailing: DropdownButton<String>(
-                  value: _temperatureUnit,
-                  onChanged: _updateTemperatureUnit,
-                  items: _tempUnits
-                      .map((unit) => DropdownMenuItem(
-                            value: unit,
-                            child: Text(unit),
-                          ))
-                      .toList(),
-                  underline: Container(),
-                ),
-              ),
-              _buildSettingRow(
-                title: 'Wind Speed Unit',
-                subtitle: 'Set the preferred unit for wind speed display',
-                trailing: DropdownButton<String>(
-                  value: _windSpeedUnit,
-                  onChanged: _updateWindSpeedUnit,
-                  items: _windUnits
-                      .map((unit) => DropdownMenuItem(
-                            value: unit,
-                            child: Text(unit),
-                          ))
-                      .toList(),
-                  underline: Container(),
-                ),
-              ),
-              _buildSettingRow(
-                title: 'Show Wind Speed',
-                subtitle: 'Display wind speed in forecast details',
-                trailing: Switch(
-                  value: _showWindSpeed,
-                  onChanged: _toggleWindSpeed,
-                  activeColor: Colors.teal,
-                ),
-              ),
-              _buildSettingRow(
-                title: 'Show Air Quality',
-                subtitle: 'Display AQI and pollutant information',
-                trailing: Switch(
-                  value: _showAirQuality,
-                  onChanged: _toggleAirQuality,
-                  activeColor: Colors.teal,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildSettingsGroup(
-            title: 'Notifications',
-            children: [
-              _buildSettingRow(
-                title: 'Daily Weather Notifications',
-                subtitle:
-                    'Receive a daily weather forecast at a specific time',
-                trailing: Switch(
-                  value: _notificationsEnabled,
-                  onChanged: _toggleNotifications,
-                  activeColor: Colors.teal,
-                ),
-              ),
-              if (_notificationsEnabled)
-                _buildSettingRow(
-                  title: 'Notification Time',
-                  subtitle: 'Set the time for your daily weather update',
-                  trailing: InkWell(
-                    onTap: () => _selectNotificationTime(context),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        _notificationTime.format(context),
-                        style: const TextStyle(fontSize: 16, color: Colors.teal),
-                      ),
+          ]),
+          _section('Display', Icons.tune_rounded, [
+            _dropdownRow<String>(
+              'Temperature Unit',
+              'Celsius or Fahrenheit',
+              _temperatureUnit,
+              _tempUnits,
+              (v) => setState(() {
+                _temperatureUnit = v!;
+                _save();
+              }),
+            ),
+            _dropdownRow<String>(
+              'Wind Speed Unit',
+              'Unit for wind speed display',
+              _windSpeedUnit,
+              _windUnits,
+              (v) => setState(() {
+                _windSpeedUnit = v!;
+                _save();
+              }),
+            ),
+            _switchRow(
+              'Show Wind Speed',
+              'Display wind in forecast',
+              _showWindSpeed,
+              (v) => setState(() {
+                _showWindSpeed = v;
+                _save();
+              }),
+            ),
+            _switchRow(
+              'Show Air Quality',
+              'Display AQI section',
+              _showAirQuality,
+              (v) => setState(() {
+                _showAirQuality = v;
+                _save();
+              }),
+            ),
+          ]),
+          _section('Notifications', Icons.notifications_rounded, [
+            _switchRow(
+              'Daily Weather Alert',
+              'Morning forecast notification',
+              _notificationsEnabled,
+              (v) => setState(() {
+                _notificationsEnabled = v;
+                _save();
+              }),
+            ),
+            if (_notificationsEnabled)
+              _tapRow(
+                'Notification Time',
+                _notificationTime.format(context),
+                () async {
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: _notificationTime,
+                    builder: (ctx, child) => Theme(
+                      data: ThemeData.dark(),
+                      child: child!,
                     ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildSettingsGroup(
-            title: 'App Theme',
-            children: [
-              _buildSettingRow(
-                title: 'Theme Mode',
-                subtitle: 'Choose the appearance of the app',
-                trailing: DropdownButton<ThemeMode>(
-                  value: _themeMode,
-                  onChanged: _updateThemeMode,
-                  items: _themeModes
-                      .map((mode) => DropdownMenuItem(
-                            value: mode,
-                            child: Text(mode.toString().split('.').last),
-                          ))
-                      .toList(),
-                  underline: Container(),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildSettingsGroup(
-            title: 'Data Usage',
-            children: [
-              _buildSettingRow(
-                title: 'Use Cellular Data',
-                subtitle: 'Allow data usage over mobile network',
-                trailing: Switch(
-                  value: _onCellularData,
-                  onChanged: _toggleCellularData,
-                  activeColor: Colors.teal,
-                ),
-              ),
-              _buildSettingRow(
-                title: 'Forecast Update Frequency',
-                subtitle: 'How often the app refreshes weather data',
-                trailing: const Text(
-                  "Every 30 minutes",
-                  style: TextStyle(color: Colors.grey),
-                ),
-                enabled: false,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildSettingsGroup(
-            title: 'About',
-            children: [
-              _buildAboutItem(
-                  title: 'App Version', value: 'WeatherSphere v1.0.0'),
-              _buildAboutItem(
-                title: 'Privacy Policy',
-                onTap: () {
-                  // TODO: Implement link to privacy policy
+                  );
+                  if (picked != null && mounted) {
+                    setState(() => _notificationTime = picked);
+                    _save();
+                  }
                 },
               ),
-              _buildAboutItem(
-                title: 'Contact Us',
-                onTap: () {
-                  // TODO: Implement contact us action
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
+          ]),
+          _section('Appearance', Icons.palette_rounded, [
+            _dropdownRow<ThemeMode>(
+              'App Theme',
+              'System, Light, or Dark',
+              _themeMode,
+              [ThemeMode.system, ThemeMode.light, ThemeMode.dark],
+              (v) => setState(() {
+                _themeMode = v!;
+                _save();
+              }),
+              labelOf: (m) => m.name[0].toUpperCase() + m.name.substring(1),
+            ),
+          ]),
+          _section('Data', Icons.cloud_sync_rounded, [
+            _switchRow(
+              'Use Cellular Data',
+              'Allow updates over mobile network',
+              _onCellularData,
+              (v) => setState(() {
+                _onCellularData = v;
+                _save();
+              }),
+            ),
+            _infoRow('Update Frequency', 'Every 30 minutes'),
+          ]),
+          _section('About', Icons.info_outline_rounded, [
+            _infoRow('Version', 'WeatherSphere v1.0.0'),
+            _tapRow('Privacy Policy', '', () {}),
+            _tapRow('Contact Us', '', () {}),
+          ]),
         ],
       ),
     );
   }
 
-  Widget _buildSettingsGroup({
-    required String title,
-    required List<Widget> children,
-  }) {
+  Widget _section(String title, IconData icon, List<Widget> rows) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 20, 0, 10),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.white38, size: 16),
+              const SizedBox(width: 6),
+              Text(title.toUpperCase(),
+                  style: const TextStyle(
+                      color: Colors.white38,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2)),
+            ],
+          ),
         ),
-        const SizedBox(height: 10),
         Container(
           decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[200]!),
+            color: const Color(0xFF1F2937),
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0),
-            child: Column(
-              children: children,
-            ),
+          child: Column(
+            children: List.generate(rows.length, (i) {
+              return Column(
+                children: [
+                  rows[i],
+                  if (i < rows.length - 1)
+                    Divider(
+                      height: 0,
+                      indent: 16,
+                      color: Colors.white.withValues(alpha: 0.06),
+                    ),
+                ],
+              );
+            }),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSettingRow({
-    required String title,
-    String? subtitle,
-    required Widget trailing,
-    bool enabled = true,
-  }) {
+  Widget _switchRow(
+      String title, String sub, bool value, ValueChanged<bool> onChanged) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                      fontSize: 16,
-                      color: enabled ? Colors.black87 : Colors.grey),
-                ),
-                if (subtitle != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      subtitle,
-                      style: TextStyle(
-                          color: enabled ? Colors.grey[600] : Colors.grey[400],
-                          fontSize: 13),
-                    ),
-                  ),
+                Text(title,
+                    style: const TextStyle(color: Colors.white, fontSize: 15)),
+                Text(sub,
+                    style: const TextStyle(
+                        color: Colors.white38, fontSize: 12)),
               ],
             ),
           ),
-          Opacity(opacity: enabled ? 1.0 : 0.6, child: trailing),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: const Color(0xFF3B82F6),
+            inactiveTrackColor: Colors.white12,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildAboutItem({
-    required String title,
-    String? value,
-    VoidCallback? onTap,
-  }) {
-    return ListTile(
-      title: Text(title, style: const TextStyle(fontSize: 16)),
-      subtitle:
-          value != null ? Text(value, style: const TextStyle(color: Colors.grey)) : null,
+  Widget _dropdownRow<T>(String title, String sub, T value, List<T> items,
+      ValueChanged<T?> onChanged,
+      {String Function(T)? labelOf}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(color: Colors.white, fontSize: 15)),
+                Text(sub,
+                    style: const TextStyle(
+                        color: Colors.white38, fontSize: 12)),
+              ],
+            ),
+          ),
+          DropdownButton<T>(
+            value: value,
+            dropdownColor: const Color(0xFF1F2937),
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+            underline: const SizedBox(),
+            icon: const Icon(Icons.expand_more_rounded,
+                color: Colors.white38, size: 18),
+            items: items
+                .map((e) => DropdownMenuItem<T>(
+                      value: e,
+                      child: Text(labelOf != null ? labelOf(e) : e.toString()),
+                    ))
+                .toList(),
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tapRow(String title, String value, VoidCallback onTap) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
-      trailing: onTap != null
-          ? const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey)
-          : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(title,
+                  style: const TextStyle(color: Colors.white, fontSize: 15)),
+            ),
+            if (value.isNotEmpty)
+              Text(value,
+                  style: const TextStyle(
+                      color: Color(0xFF3B82F6),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500)),
+            if (value.isEmpty)
+              const Icon(Icons.chevron_right_rounded,
+                  color: Colors.white24, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _infoRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(title,
+                style: const TextStyle(color: Colors.white, fontSize: 15)),
+          ),
+          Text(value,
+              style: const TextStyle(color: Colors.white38, fontSize: 14)),
+        ],
+      ),
     );
   }
 }

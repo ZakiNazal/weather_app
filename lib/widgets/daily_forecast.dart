@@ -1,160 +1,167 @@
-// ignore_for_file: deprecated_member_use, avoid_print
-
 import 'package:flutter/material.dart';
-import 'package:weather_app/models/weather_model.dart';
 import 'package:intl/intl.dart';
-import 'package:weather_app/services/weather_icon.dart'; // For DateFormat
+import 'package:weather_app/models/weather_model.dart';
+import 'package:weather_app/services/weather_icon.dart';
+import 'package:weather_app/utils/weather_theme.dart';
 
 class DailyForecastWidget extends StatelessWidget {
-  final List<DailyForecast>? forecast;
+  final List<DailyForecast> forecast;
   final bool isCelsius;
 
   const DailyForecastWidget({
-    super.key, 
+    super.key,
     required this.forecast,
     required this.isCelsius,
   });
 
-  String formatTemp(double temp) {
-    print('Daily temp before conversion: $temp'); // Debug print
-    if (!isCelsius) {
-      // Convert Celsius to Fahrenheit
-      temp = (temp * 9 / 5) + 32;
-      print('Daily temp after conversion: $temp'); // Debug print
-    }
-    return '${temp.round()}°${isCelsius ? 'C' : 'F'}';
+  String _temp(double t) {
+    if (!isCelsius) t = t * 9 / 5 + 32;
+    return '${t.round()}°';
   }
 
   @override
   Widget build(BuildContext context) {
-    print('Building DailyForecastWidget with ${forecast!.length} items'); // Debug print
-    if (forecast == null || forecast!.isEmpty) {
-      return const SizedBox(
-        height: 200,
+    if (forecast.isEmpty) {
+      return GlassCard(
         child: Center(
-          child: Text(
-            'No forecast data available',
-            style: TextStyle(color: Colors.grey),
-          ),
+          child: Text('No forecast data',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6))),
         ),
       );
     }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: forecast!.length,
-      itemBuilder: (context, index) {
-        final day = forecast![index];
-        print('Daily item $index: ${day.maxTemp}°C/${day.minTemp}°C'); // Debug print
-        final date = DateFormat.E().format(day.dateTime); // e.g., "Mon"
-        final isToday = index == 0;
+    // Compute global min/max for temp bar scaling
+    final allMax = forecast.map((d) => d.maxTemp).reduce((a, b) => a > b ? a : b);
+    final allMin = forecast.map((d) => d.minTemp).reduce((a, b) => a < b ? a : b);
+    final range = (allMax - allMin).clamp(1.0, double.infinity);
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 15),
-          padding: const EdgeInsets.all(15),
-          decoration: BoxDecoration(
-            color: isToday ? Colors.teal.shade700 : Colors.teal,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.shade500,
-                blurRadius: 10,
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Column(
+        children: List.generate(forecast.length, (i) {
+          final day = forecast[i];
+          final isToday = i == 0;
+          final isLast = i == forecast.length - 1;
+          final label = isToday ? 'Today' : DateFormat.E().format(day.dateTime);
+          final date = DateFormat.MMMd().format(day.dateTime);
+          final precip = day.precipProbability;
+
+          // Temp bar positions (0..1)
+          final barStart = ((day.minTemp - allMin) / range).clamp(0.0, 1.0);
+          final barEnd = ((day.maxTemp - allMin) / range).clamp(0.0, 1.0);
+
+          return Column(
             children: [
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
                   children: [
-                    Text(
-                      isToday ? 'Today' : date,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    // Day label
+                    SizedBox(
+                      width: 52,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(label,
+                              style: TextStyle(
+                                color: isToday ? Colors.white : Colors.white70,
+                                fontSize: 14,
+                                fontWeight: isToday
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              )),
+                          Text(date,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                fontSize: 11,
+                              )),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      DateFormat.MMMd().format(day.dateTime),
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 12,
+                    // Icon + optional precip
+                    SizedBox(
+                      width: 44,
+                      child: Column(
+                        children: [
+                          Icon(WeatherIcon.getIcon(day.condition),
+                              color: Colors.white, size: 24),
+                          if (precip != null && precip > 5)
+                            Text(
+                              '${precip.round()}%',
+                              style: TextStyle(
+                                  color: Colors.lightBlue.shade200,
+                                  fontSize: 10),
+                            ),
+                        ],
+                      ),
+                    ),
+                    // Min temp
+                    SizedBox(
+                      width: 34,
+                      child: Text(
+                        _temp(day.minTemp),
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Temp range bar
+                    Expanded(
+                      child: LayoutBuilder(builder: (_, c) {
+                        final w = c.maxWidth;
+                        return Stack(children: [
+                          Container(
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                          Positioned(
+                            left: w * barStart,
+                            width: (w * (barEnd - barStart)).clamp(8.0, w),
+                            child: Container(
+                              height: 5,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(colors: [
+                                  Color(0xFF42A5F5),
+                                  Color(0xFFFF7043),
+                                ]),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                          ),
+                        ]);
+                      }),
+                    ),
+                    const SizedBox(width: 8),
+                    // Max temp
+                    SizedBox(
+                      width: 34,
+                      child: Text(
+                        _temp(day.maxTemp),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              Expanded(
-                flex: 4,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: Center(
-                    child: Icon(
-                      WeatherIcon.getIcon(day.description),
-                      key: ValueKey(day.description),
-                      size: 30,
-                      color: Colors.white,
-                    ),
-                  ),
+              if (!isLast)
+                Divider(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  height: 0,
                 ),
-              ),
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          formatTemp(day.maxTemp),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text("•", 
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 14,
-                           ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          formatTemp(day.minTemp),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      WeatherIcon.getFormattedCondition(day.description),
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 12,
-                      ),
-                      textAlign: TextAlign.end,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
             ],
-          ),
-        );
-      },
+          );
+        }),
+      ),
     );
   }
 }
