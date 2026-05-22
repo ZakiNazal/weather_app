@@ -114,12 +114,6 @@ class _SplashScreenState extends State<SplashScreen>
                 opacity: _fade,
                 child: SizedBox(
                   width: 120,
-                  child: LinearProgressIndicator(
-                    backgroundColor: Colors.white12,
-                    valueColor: const AlwaysStoppedAnimation(Colors.white38),
-                    borderRadius: BorderRadius.circular(4),
-                    minHeight: 3,
-                  ),
                 ),
               ),
             ],

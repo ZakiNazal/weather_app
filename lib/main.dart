@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -60,6 +58,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
+      statusBarColor: Colors.transparent,
+    ));
     if (widget.weather != null) {
       _weather = widget.weather;
       _isLoading = false;
@@ -132,16 +133,23 @@ class _HomePageState extends State<HomePage> {
   void _openMap() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => FullScreenMap(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 380),
+        reverseTransitionDuration: const Duration(milliseconds: 320),
+        pageBuilder: (_, __, ___) => FullScreenMap(
           initialLocation: _lastKnownLocation ?? const LatLng(21.5434, 39.1729),
           cityName: _lastKnownCityName ?? 'Current Location',
           transitionsBuilder: (_, animation, __, child) {
             final tween = Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)
-                .chain(CurveTween(curve: Curves.easeInOut));
+                .chain(CurveTween(curve: Curves.easeOutCubic));
             return SlideTransition(position: animation.drive(tween), child: child);
           },
         ),
+        transitionsBuilder: (_, animation, __, child) {
+          final slide = Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)
+              .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+          return SlideTransition(position: slide, child: child);
+        },
       ),
     );
   }
@@ -171,9 +179,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
-      statusBarColor: Colors.transparent,
-    ));
     final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
@@ -295,7 +300,7 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 28),
                 Center(
                   child: Text(
-                    '© 2025 WeatherSphere',
+                    '© 2026 WeatherSphere',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.4),
                       fontSize: 12,
@@ -355,7 +360,21 @@ class _HomePageState extends State<HomePage> {
         _topBarBtn(null, Icons.settings_rounded, () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const SettingPage()),
+            PageRouteBuilder(
+              transitionDuration: const Duration(milliseconds: 350),
+              reverseTransitionDuration: const Duration(milliseconds: 300),
+              pageBuilder: (_, __, ___) => const SettingPage(),
+              transitionsBuilder: (_, animation, __, child) {
+                final slide = Tween(
+                  begin: const Offset(0.0, 1.0),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                ));
+                return SlideTransition(position: slide, child: child);
+              },
+            ),
           );
         }),
       ],
@@ -398,30 +417,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottomNav(double bottomPad) {
-    return Container(
-      color: Colors.transparent,
+    return Padding(
       padding: EdgeInsets.fromLTRB(24, 0, 24, bottomPad + 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            height: 62,
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(30),
-              border:
-                  Border.all(color: Colors.white.withValues(alpha: 0.15)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _navItem(Icons.home_rounded, 'Home', null),
-                _navItem(Icons.map_rounded, 'Map', _openMap),
-                _navItem(Icons.search_rounded, 'Search', _openSearch),
-              ],
-            ),
-          ),
+      child: Container(
+        height: 62,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.50),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _navItem(Icons.home_rounded, 'Home', null),
+            _navItem(Icons.map_rounded, 'Map', _openMap),
+            _navItem(Icons.search_rounded, 'Search', _openSearch),
+          ],
         ),
       ),
     );
@@ -443,7 +454,7 @@ class _HomePageState extends State<HomePage> {
                   : Colors.white.withValues(alpha: 0.55),
               size: 24,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
@@ -463,9 +474,9 @@ class _HomePageState extends State<HomePage> {
 
   String _greeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    if (hour < 20) return 'Good evening';
-    return 'Good night';
+    if (hour < 12) return 'Good morning!';
+    if (hour < 17) return 'Good afternoon!';
+    if (hour < 20) return 'Good evening!';
+    return 'Good night!';
   }
 }

@@ -38,7 +38,7 @@ class HourlyForecastWidget extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 148,
+      height: 135,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: hourly.length,
@@ -48,9 +48,7 @@ class HourlyForecastWidget extends StatelessWidget {
           final isNow = i == 0;
           final precip = h.precipProbability;
 
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: Container(
+          return Container(
               width: 78,
               decoration: BoxDecoration(
                 color: isNow
@@ -110,7 +108,6 @@ class HourlyForecastWidget extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
           );
         },
       ),

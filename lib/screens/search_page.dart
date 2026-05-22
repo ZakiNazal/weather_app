@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/weather_api.dart';
@@ -64,23 +62,17 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          // Blurred + dark background
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(color: Colors.black.withValues(alpha: 0.7)),
+      body: Container(
+        color: const Color(0xE5080818),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildSearchField(),
+              Expanded(child: _buildBody()),
+            ],
           ),
-          SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                _buildSearchField(),
-                Expanded(child: _buildBody()),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -108,35 +100,28 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildSearchField() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+        ),
+        child: TextField(
+          controller: _controller,
+          focusNode: _focus,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+          textInputAction: TextInputAction.search,
+          onSubmitted: _search,
+          decoration: InputDecoration(
+            hintText: 'Enter city name…',
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+            prefixIcon: const Icon(Icons.location_city_rounded, color: Colors.white54),
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.search_rounded, color: Colors.white70),
+              onPressed: () => _search(_controller.text),
             ),
-            child: TextField(
-              controller: _controller,
-              focusNode: _focus,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-              textInputAction: TextInputAction.search,
-              onSubmitted: _search,
-              decoration: InputDecoration(
-                hintText: 'Enter city name…',
-                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
-                prefixIcon: const Icon(Icons.location_city_rounded,
-                    color: Colors.white54),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.search_rounded, color: Colors.white70),
-                  onPressed: () => _search(_controller.text),
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-            ),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 16),
           ),
         ),
       ),
